@@ -1,0 +1,67 @@
+#root { width: 100%; max-width: none; margin: 0; text-align: left; border: 0; min-height: 100vh; display: block; }
+.queue-hint { margin: 10px 18px 12px; color: var(--muted); font-size: 11px; }
+.login-screen { min-height: 100vh; display: grid; place-items: center; padding: 24px; background: var(--canvas); }
+.login-card { width: min(100%, 430px); padding: 32px; display: grid; gap: 17px; }
+.login-card .brand-mark { margin-bottom: 2px; }
+.login-card h1 { margin: -12px 0 0; }
+.login-card .field { display: grid; gap: 7px; }
+.login-submit { width: 100%; text-align: center; }
+.login-card .field-hint { line-height: 1.5; }
+.error-callout { border: 1px solid #f1d1cf; background: var(--red-pale); border-radius: 8px; padding: 10px 12px; color: var(--red); }
+.patient-snapshot { padding: 16px 19px; display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 8px 18px; margin-bottom: 16px; }
+.patient-snapshot > strong { font-size: 15px; }
+.vital-grid { grid-column: 1 / -1; display: grid; grid-template-columns: repeat(5, minmax(0, 1fr)); gap: 8px; margin-top: 5px; }
+.section-title { margin: 24px 0 12px; }
+.order-row { margin: 0 0 13px; display: flex; align-items: center; flex-wrap: wrap; gap: 8px; color: var(--muted); }
+.medication-list { display: grid; gap: 10px; margin: 12px 0 18px; }
+.medication-row { display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 10px; padding: 12px; border: 1px solid var(--line); border-radius: 9px; }
+.medication-row .field { min-width: 0; }
+.medication-row input { min-width: 0; }
+.profile-layout { align-items: start; }
+.profile-layout > .panel { min-width: 0; }
+.prescription-preview { max-width: 760px; border: 1px solid var(--line); border-radius: 10px; padding: 24px; margin-bottom: 20px; line-height: 1.65; }
+.prescription-brand { display: flex; justify-content: space-between; align-items: flex-start; gap: 15px; }
+.prescription-brand h2 { margin: 0 0 3px; }
+.prescription-brand p { margin: 0 0 3px; color: var(--muted); }
+.prescription-preview ol { padding-left: 23px; }
+.prescription-preview li { margin: 12px 0; padding-left: 5px; }
+.signature-line { display: block; width: 205px; height: 68px; border-bottom: 1px solid var(--line); }
+.prescription-signature { display: grid; justify-items: start; margin-top: 30px; gap: 7px; }
+.prescription-signature .signature-preview { margin: 0; }
+.signature-canvas { touch-action: none; }
+.toast { z-index: 10; }
+select:disabled, input:disabled, textarea:disabled { background: #f8fafb; color: var(--ink); opacity: 1; }
+@media (max-width: 900px) {
+  .patient-snapshot { grid-template-columns: 1fr 1fr; }
+  .medication-row { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+}
+@media (max-width: 620px) {
+  .topbar { height: auto; min-height: 65px; padding: 12px 16px; }
+  .brand { min-width: 0; }
+  .brand-name { font-size: 13px; }
+  .topbar-right { gap: 8px; }
+  .date-label { display: none; }
+  .layout { display: block; }
+  .sidebar { width: 100%; padding: 9px 10px; }
+  .side-caption, .sidebar-note { display: none; }
+  .nav-list { display: flex; overflow-x: auto; gap: 4px; }
+  .nav-button { flex: 0 0 auto; width: auto; white-space: nowrap; padding: 9px 10px; gap: 7px; }
+  .main-content { padding: 22px 14px 36px; }
+  .page-heading { align-items: flex-start; flex-direction: column; }
+  .page-heading .heading-actions { width: 100%; }
+  .stats-grid, .analytics-summary { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+  .analytics-layout { grid-template-columns: 1fr; }
+  .patient-snapshot { grid-template-columns: 1fr 1fr; }
+  .vital-grid { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+  .queue-toolbar { align-items: stretch; flex-direction: column; }
+  .search-wrap { max-width: none; }
+  .filter-row { padding-bottom: 2px; }
+  .medication-row { grid-template-columns: 1fr 1fr; }
+  .profile-layout { grid-template-columns: 1fr; }
+  .login-card { padding: 24px; }
+}
+@media print {
+  body * { visibility: hidden !important; }
+  .prescription-preview, .prescription-preview * { visibility: visible !important; }
+  .prescription-preview { position: absolute; inset: 0; max-width: none; border: 0; }
+}

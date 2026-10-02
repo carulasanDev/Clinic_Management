@@ -1,0 +1,45 @@
+services:
+  database:
+    image: mysql:8.4
+    restart: unless-stopped
+    environment:
+      MYSQL_DATABASE: clinic_management
+      MYSQL_USER: clinic_app
+      MYSQL_PASSWORD: ${DB_PASSWORD:?Set DB_PASSWORD in your environment}
+      MYSQL_ROOT_PASSWORD: ${MYSQL_ROOT_PASSWORD:?Set MYSQL_ROOT_PASSWORD in your environment}
+    volumes:
+      - clinic_mysql:/var/lib/mysql
+    healthcheck:
+      test: ["CMD", "mysqladmin", "ping", "-h", "localhost"]
+      interval: 5s
+      timeout: 5s
+      retries: 20
+
+  clinic-api:
+    build:
+      context: ./backend
+    restart: unless-stopped
+    environment:
+      DB_URL: jdbc:mysql://database:3306/clinic_management?useSSL=false&serverTimezone=UTC
+      DB_USERNAME: clinic_app
+      DB_PASSWORD: ${DB_PASSWORD:?Set DB_PASSWORD in your environment}
+      CLINIC_ADMIN_USERNAME: ${CLINIC_ADMIN_USERNAME:?Set CLINIC_ADMIN_USERNAME in your environment}
+      CLINIC_ADMIN_PASSWORD: ${CLINIC_ADMIN_PASSWORD:?Set CLINIC_ADMIN_PASSWORD in your environment}
+      CLINIC_ALLOWED_ORIGINS: ${CLINIC_ALLOWED_ORIGINS:-http://localhost}
+      SECURE_COOKIES: ${SECURE_COOKIES:-false}
+    depends_on:
+      database:
+        condition: service_healthy
+
+  web:
+    build:
+      context: .
+      dockerfile: frontend/Dockerfile
+    restart: unless-stopped
+    ports:
+      - "80:8080"
+    depends_on:
+      - clinic-api
+
+volumes:
+  clinic_mysql:
