@@ -1,0 +1,295 @@
+{
+  "info": {
+    "_postman_id": "2a669083-4597-464d-a6a2-e6faac0080f4",
+    "name": "Amity Medical Clinic API",
+    "description": "Tests every Spring Boot API route. Select the local environment and send GET CSRF before signing in. Postman keeps the session cookies for requests to the same base URL.",
+    "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
+  },
+  "event": [
+    {
+      "listen": "prerequest",
+      "script": {
+        "type": "text/javascript",
+        "exec": [
+          "if (['POST', 'PUT', 'PATCH', 'DELETE'].includes(pm.request.method)) {",
+          "  const token = pm.collectionVariables.get('csrfToken');",
+          "  if (token) pm.request.headers.upsert({ key: 'X-XSRF-TOKEN', value: token });",
+          "}"
+        ]
+      }
+    }
+  ],
+  "variable": [
+    {
+      "key": "baseUrl",
+      "value": "http://127.0.0.1:8080",
+      "type": "string"
+    },
+    {
+      "key": "clinicUsername",
+      "value": "clinic-admin",
+      "type": "string"
+    },
+    {
+      "key": "clinicPassword",
+      "value": "",
+      "type": "string"
+    },
+    {
+      "key": "patientId",
+      "value": "550e8400-e29b-41d4-a716-446655440000",
+      "type": "string"
+    },
+    {
+      "key": "csrfToken",
+      "value": "",
+      "type": "string"
+    }
+  ],
+  "item": [
+    {
+      "name": "Authentication",
+      "item": [
+        {
+          "name": "Get CSRF token",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": "{{baseUrl}}/api/auth/csrf",
+            "description": "Run before login and again if a state-changing request returns HTTP 403. Saves the token for the collection's POST/PUT requests."
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('CSRF token request succeeds', function () {",
+                  "  pm.response.to.have.status(200);",
+                  "});",
+                  "const body = pm.response.json();",
+                  "pm.collectionVariables.set('csrfToken', body.token);",
+                  "pm.test('CSRF token is present', function () {",
+                  "  pm.expect(body.token).to.be.a('string').and.not.empty;",
+                  "});"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "Sign in",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"username\": \"{{clinicUsername}}\",\n  \"password\": \"{{clinicPassword}}\"\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            },
+            "url": "{{baseUrl}}/api/auth/login",
+            "description": "Requires a fresh CSRF token. Postman automatically retains the XSRF and session cookies for this host."
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('Sign-in succeeds', function () {",
+                  "  pm.response.to.have.status(200);",
+                  "});",
+                  "pm.test('Signed-in username is returned', function () {",
+                  "  pm.expect(pm.response.json().username).to.eql(pm.collectionVariables.get('clinicUsername'));",
+                  "});"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "Get current session",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": "{{baseUrl}}/api/auth/me",
+            "description": "Requires the session cookie from Sign in; expect HTTP 200."
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('Session is authenticated', function () {",
+                  "  pm.response.to.have.status(200);",
+                  "});"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "Sign out",
+          "request": {
+            "method": "POST",
+            "header": [],
+            "url": "{{baseUrl}}/api/auth/logout",
+            "description": "Invalidates the session and clears its cookies. Fetch a CSRF token first."
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('Sign-out succeeds', function () {",
+                  "  pm.response.to.have.status(204);",
+                  "});"
+                ]
+              }
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "Patients",
+      "item": [
+        {
+          "name": "List patients",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": "{{baseUrl}}/api/patients",
+            "description": "Returns patient records owned by the signed-in clinic account. Requires a session."
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('Patient list request succeeds', function () {",
+                  "  pm.response.to.have.status(200);",
+                  "  pm.expect(pm.response.json()).to.be.an('array');",
+                  "});"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "Create or update patient",
+          "request": {
+            "method": "PUT",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"id\": \"{{patientId}}\",\n  \"createdAt\": null,\n  \"name\": \"Alex Morgan\",\n  \"age\": \"35\",\n  \"dob\": \"1991-04-12\",\n  \"sex\": \"Female\",\n  \"phone\": \"555-0100\",\n  \"complaint\": \"Routine check-up\",\n  \"triage\": \"Routine\",\n  \"status\": \"Waiting\",\n  \"vitals\": {\n    \"bloodPressure\": \"120/80\",\n    \"temperature\": \"36.8\"\n  },\n  \"soap\": {\n    \"subjective\": \"\",\n    \"objective\": \"\",\n    \"assessment\": \"\",\n    \"plan\": \"\"\n  },\n  \"medications\": [],\n  \"demo\": false\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            },
+            "url": "{{baseUrl}}/api/patients/{{patientId}}",
+            "description": "Uses a fixed sample UUID. This creates or updates that record in the local clinic database. Fetch a CSRF token first."
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('Patient is created or updated', function () {",
+                  "  pm.response.to.have.status(200);",
+                  "  pm.expect(pm.response.json().id).to.eql(pm.collectionVariables.get('patientId'));",
+                  "});"
+                ]
+              }
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "Doctor profile",
+      "item": [
+        {
+          "name": "Get doctor profile",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": "{{baseUrl}}/api/profile",
+            "description": "Returns the signed-in account's profile, or an empty profile if one has not been saved."
+          }
+        },
+        {
+          "name": "Create or update doctor profile",
+          "request": {
+            "method": "PUT",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"fullName\": \"Dr. Alex Morgan\",\n  \"license\": \"LIC-12345\",\n  \"specialty\": \"Family Medicine\",\n  \"clinicName\": \"Amity Medical Clinic\",\n  \"contact\": \"555-0100\",\n  \"bio\": \"\",\n  \"photo\": \"\",\n  \"signature\": \"\"\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            },
+            "url": "{{baseUrl}}/api/profile",
+            "description": "Fetch a CSRF token first. Keep photo and signature empty or supply valid PNG/JPEG base64 data URLs under 2 MB."
+          }
+        }
+      ]
+    },
+    {
+      "name": "Authorization checks",
+      "item": [
+        {
+          "name": "Unauthenticated patient list (expect 401)",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": "{{baseUrl}}/api/patients",
+            "description": "Sign out first or clear this host's cookies; this protected endpoint should return HTTP 401."
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('Protected route rejects unauthenticated requests', function () {",
+                  "  pm.response.to.have.status(401);",
+                  "});"
+                ]
+              }
+            }
+          ]
+        }
+      ]
+    }
+  ]
+}

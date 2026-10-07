@@ -91,6 +91,10 @@ mvn package
 
 The frontend production output is generated in `frontend/dist/`; the executable Spring Boot JAR is generated in `backend/target/`. These are build artifacts, not source files to edit.
 
+## Test the API with Postman
+
+Import the collection and local environment from [`postman/`](./postman/). Select the local environment and enter your clinic password in its `clinicPassword` variable. The collection includes all API routes, carries the CSRF token into write requests, and uses Postman's cookie jar for the login session. See [`postman/README.md`](./postman/README.md) for the suggested request order and testing notes.
+
 ## Docker Compose
 
 The optional Compose setup runs MySQL, the API, and an Nginx-hosted frontend. From the project root, set unique secrets in the current shell and start the services:
